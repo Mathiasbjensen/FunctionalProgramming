@@ -40,10 +40,19 @@ let sum(p,xs) = List.fold (fun x y -> if p y then x+y else x) 0 xs
 sum(p,skod2)
 
 // 5.5
-
-let areNB m c1 c2 = List.forall (fun x -> (x<>(c1,c2) || x<>(c2,c1))) m
-
+// areNB
+let areNB m c1 c2 = List.exists (fun x -> if x=(c1,c2) || x = (c2,c1) then true else false) m
 let maps = [("a","b");("c","d");("e","b")]
 
-areNB maps "a" "b"
-// hvad skal der ske??
+areNB maps "b" "a"
+
+// canBeExtBy
+// from the book.
+let rec canBeExtBy m col c =
+    match col with
+    | [] -> true
+    | c'::col' -> not(areNB m c' c) && canBeExtBy m col' c
+
+let exMap = [("a","b");("c","d");("d","a")]
+
+canBeExtBy exMap ["a";"c"] "a"
