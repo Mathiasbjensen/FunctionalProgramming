@@ -46,4 +46,4 @@ let areNB m c1 c2 = List.forall (fun x -> (x<>(c1,c2) || x<>(c2,c1))) m
 let maps = [("a","b");("c","d");("e","b")]
 
 areNB maps "a" "b"
-// wtf
+// hvad skal der ske??
