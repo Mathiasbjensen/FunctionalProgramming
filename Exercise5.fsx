@@ -21,9 +21,7 @@ Solve 2.0 1.0 8.0
 // 5.2
 
 let reverseList xs = List.fold (fun rs x -> x::rs) [] xs
-
 let revrev xs = List.fold (fun rs x -> reverseList x::rs) [] xs
-
 let skod = [[1;2;3;4;5];[6;7;8]]
 revrev skod
 
