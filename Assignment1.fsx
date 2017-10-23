@@ -72,6 +72,3 @@ let testp2False2 = p2 {Name = "Soren"; No = "78945612" ; Yb = 1966 ; Ths = ["spo
 let testExtractP1 = extractInterested p1 reg = [("Robert","21436587")]
 let testExtractP2 = extractInterested p2 reg = [("Hans","12341234");("Robert","21436587")]
 
-
-
-
