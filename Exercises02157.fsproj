@@ -67,6 +67,7 @@
     <Compile Include="Exercise6.fs" />
     <None Include="Assignment2.fsx" />
     <None Include="Assignment3.fsx" />
+    <None Include="Exercise8.fsx" />
     <None Include="Exercise7.fsx" />
   </ItemGroup>
   <ItemGroup>

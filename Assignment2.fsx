@@ -22,13 +22,17 @@ type FlagModel  = BasicNaturalScience * TechnologicalCore
 type CoursePlan = Set<CourseNo>   
 
 // 1
+// Feedback: Match clause is overkill. Use  a let declaration to decompose the description...
 let isValidCourseDesc desc =
     match desc with
     | (_,E) -> if E % 5 = 0 && E > 0 then true else false
+
+let isValidCourseDesc desc = let (_,E) = E % 5 = 0 && E > 0
     
 
 // 2
-let isValidCourseBase (cb:CourseBase) = Map.forall (fun _ (desc:CourseDesc) -> isValidCourseDesc desc  = true) cb
+// Feed back: True not needed
+let isValidCourseBase (cb:CourseBase) = Map.forall (fun _ (desc:CourseDesc) -> isValidCourseDesc desc = true) cb
 
 // 3
 

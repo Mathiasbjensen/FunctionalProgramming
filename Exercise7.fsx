@@ -1,36 +1,45 @@
-﻿type exp =
-    | C of int
-    | BinOp of exp * string * exp
-    | Id of string
-    | Def of string * exp * exp
+﻿type FileSys = Element list 
+    and Element =
+    | File of string * string
+    | Dir of string * FileSys
 
-// 2
-let rec toString exp =
-    match exp with
-    | C a -> a.ToString()
-    | BinOp (e1,s,e2) -> "("+toString e1 + s + toString e2+")"
+// ListOfNames
+let d1 = 
+    Dir("d1",[File("a1","java"); 
+        Dir("d2", [File("a2","fsx"); 
+            Dir("d3", [File("a3","fs")])]); 
+        File("a4","fsx"); 
+        Dir("d3", [File("a5","pdf")])]);;
 
-toString (BinOp (C 2,"+", BinOp (C 5, "*", C 3)))
 
-// 3
-let rec extractOps exp =
-    match exp with
-    | C a -> Set.empty
-    | BinOp(e1,s,e2) -> Set.union (Set.singleton s) (Set.union(extractOps e1)  (extractOps e2))
+let rec namesFileSys = function 
+    | [] -> [] 
+    | e::es -> (namesElement e) @ (namesFileSys es) 
+and namesElement = function 
+    | File (s,s1) -> [s+"."+s1] 
+    | Dir(s,fs) -> s :: (namesFileSys fs)
 
-extractOps (BinOp (C 2,"+", BinOp (C 5, "*", C 3)))
+namesElement d1
 
-// 4
+// search
 
-let rec isDefAux exp s =
-    match exp with
-    | C _ -> true
-    | Id s1 -> Set.contains s1 s
-    | Def (s1,b,c) -> isDefAux b s && isDefAux c (Set.add s1 s)
-    | BinOp (a,s1,c) -> isDefAux a s && isDefAux c s
+let rec searchFileSys ext = function
+    | [] -> Set.empty
+    | e::es -> Set.union (searchElement ext e) (searchFileSys ext es)
+and searchElement ext = function
+    | File (s,s1) -> if s1 = ext then Set.singleton s else Set.empty
+    | Dir (s,fs) -> searchFileSys ext fs
 
-let isDef exp = isDefAux exp Set.empty
+searchElement "fsx" d1
 
-isDef (Def ("x", C 5, BinOp (Id "x", "+", Id "x")))
 
-isDef (Def ("x", C 5, BinOp (Id "y", "+", Id "x")))
+// longNames
+
+let rec longNamesFileSys = function
+    | [] -> Set.empty
+    | e::es -> Set.union (longNamesElement e) (longNamesFileSys es) 
+and longNamesElement = function
+    | File (s,s1) ->  set [s+"."+s1]
+    | Dir (s,fs) -> Set.map ((+) (s+"\\")) (longNamesFileSys fs)
+
+longNamesElement d1

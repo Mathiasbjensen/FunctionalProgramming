@@ -1,6 +1,4 @@
-﻿open System.Security.Cryptography.X509Certificates
-
-// Exercises for September 8th
+﻿// Exercises for September 8th
 
 // Exercise 1
 let rec adder = function
