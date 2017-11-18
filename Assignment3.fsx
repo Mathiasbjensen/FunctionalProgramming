@@ -74,9 +74,7 @@ let testTotalFlow1 = totalFlow riv = 40
  
 // 5 tests
 let testMainSource = mainSource riv = ("R2",15)
- 
- 
- 
+
 // 6 tests
 let testTryInsert1 = tryInsert "R1" riv3 riv = Some (R ("R1", 5, [R ("R3", 8, [])]))
 let testTryInsert2 = tryInsert "R5" riv3 riv = None

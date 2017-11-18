@@ -69,6 +69,7 @@
     <None Include="Assignment3.fsx" />
     <None Include="Exercise8.fsx" />
     <None Include="Exercise7.fsx" />
+    <None Include="Exercise9.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
