@@ -40,3 +40,4 @@ and maxT2L' = function
                 | [t] -> maxT2' t 
                 | t::ts -> max(maxT2' t) (maxT2L' ts)
 
+                
