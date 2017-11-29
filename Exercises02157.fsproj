@@ -72,6 +72,10 @@
     <None Include="Exercise9.fsx" />
     <None Include="Exercise10.fsx" />
     <None Include="TreeTraversal.fsx" />
+    <None Include="Exercise11.fsx" />
+    <None Include="Assignment4.fsx" />
+
+
 
   </ItemGroup>
   <ItemGroup>
