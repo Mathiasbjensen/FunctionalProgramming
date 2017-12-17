@@ -36,12 +36,12 @@ isSample ([F;S],exp)
 // 3
 
 type Description =  ((Outcome * string) list) * float * string
-// skod List.rev
+
+
 let rec descriptionOfAux = function
-    | (_,Leaf s1, (ys,p2,s2)) -> ((List.rev ys),p2,s2+s1) 
+    | (_,Leaf s1, (ys,p2,s2)) -> ((List.rev ys),p2,s1) 
     | (x::xs,Branch(ds,p1,tl,tr),(ys,p2,s)) when x = F -> descriptionOfAux(xs,tr,((x,ds)::ys,(1.0-p1)*p2,s))  
     | (x::xs,Branch(ds,p1,tl,tr),(ys,p2,s)) -> descriptionOfAux(xs,tl,((x,ds)::ys,(p1)*p2,s))
-
 
 let descriptionOf os t = if isSample(os,t) then descriptionOfAux(os,t,([], 1.0, "")) else failwith "Sample not correct"
 
