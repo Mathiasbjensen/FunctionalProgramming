@@ -76,6 +76,4 @@ let tableOf m n f =
 Seq.toList (tableOf 3 4 (+))
 
 // 3
-let skod = Seq.initInfinite (fun (i:string) -> i+"a")
-
 
