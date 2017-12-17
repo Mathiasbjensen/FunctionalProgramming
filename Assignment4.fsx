@@ -11,7 +11,8 @@ type ProbTree   = | Branch of string * float * ProbTree * ProbTree
                   | Leaf of string;;
 
 
-// right tree of fig 1. (2/3)let exp = Branch(">2",0.67, Branch(">3",0.5, Leaf "A", Leaf "B"), Branch(">3",0.5, Leaf "C", Leaf "D"));;
+// right tree of fig 1. (2/3)
+let exp = Branch(">2",0.67, Branch(">3",0.5, Leaf "A", Leaf "B"), Branch(">3",0.5, Leaf "C", Leaf "D"));;
 
 // 1
 // Frederik du skal nok lige tjekke den her, er lidt usikker på Leaf tilfældet.
@@ -34,6 +35,8 @@ let rec isSample = function
 isSample ([F;S],exp)
 
 // 3
+x::yield::tail  x>value>yield
+x::tail
 
 type Description =  ((Outcome * string) list) * float * string
 
@@ -49,14 +52,6 @@ descriptionOf [S;F] exp
 
 // 4
 
-// compute depth of tree
-
-let rec depth = function
-    | Leaf _    -> 0
-    | Branch (_,_,tl,tr) -> 1+ max (depth tl) (depth tr)
-
-// Combinations
-
 let rec allDescriptionsAux = function
     | (Leaf s1,(ys,p,s2)) -> set [(List.rev ys,p,s1)]
     | (Branch(ds,p1,tl,tr), (ys,p2,s)) -> Set.union (allDescriptionsAux(tl,((S,ds)::ys,p1*p2,s))) (allDescriptionsAux(tr,((F,ds)::ys,(1.0-p1)*p2,s)));;
@@ -65,11 +60,14 @@ let allDescriptions t = allDescriptionsAux (t,([],1.0,""))
 
 allDescriptions exp
 
+// 5
 let rec probabilityOfAux = function
     | (Leaf s1,(ys,p,s2),pred) -> if pred s1 then p else 0.0
     | (Branch(ds,p1,tl,tr), (ys,p2,s), pred) -> probabilityOfAux(tl,((S,ds)::ys,p1*p2,s),pred) + probabilityOfAux(tr,((F,ds)::ys,(1.0-p1)*p2,s),pred);;
 
 let probabilityOf t pred = probabilityOfAux (t,([],1.0,""),pred)
-
+// 6
 probabilityOf (exp) (fun s -> s = "C" || s = "B")
 
+
+    

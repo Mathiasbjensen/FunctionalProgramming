@@ -74,9 +74,8 @@
     <None Include="TreeTraversal.fsx" />
     <None Include="Exercise11.fsx" />
     <None Include="Assignment4.fsx" />
-
-
-
+    <None Include="December16fs.fsx" />
+    <None Include="Week13.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
