@@ -105,7 +105,8 @@ durationOf "washing machine" ats
 
 // 3.3
 
-let wf ats = inv ats && List.forall (fun (x,_) -> (durationOf x ats) <= 24) ats 
+let wf ats = inv ats && List.forall (fun (x,_) -> (durationOf x ats) <= 24) ats
+
 wf ats
 
 // 3.4
@@ -118,5 +119,9 @@ let rec delete (a,ats) =
 
 
 delete ("coffee machine", ats)
+
+// 3.5
+
+
 
  
