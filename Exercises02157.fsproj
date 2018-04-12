@@ -78,6 +78,7 @@
     <None Include="Week13.fsx" />
     <None Include="December15.fsx" />
     <None Include="Summer15.fsx" />
+    <None Include="Take2.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

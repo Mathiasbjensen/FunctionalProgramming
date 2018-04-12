@@ -24,8 +24,7 @@ let reverseList xs = List.fold (fun rs x -> x::rs) [] xs
 let revrev xs = List.fold (fun rs x -> reverseList x::rs) [] xs
 let skod = [[1;2;3;4;5];[6;7;8]]
 revrev skod
-
-
+reverseList  skod
 // 5.3
 let skod2 = [1;2;3;4]
 

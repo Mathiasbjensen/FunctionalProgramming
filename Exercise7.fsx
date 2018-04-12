@@ -43,3 +43,47 @@ and longNamesElement = function
     | Dir (s,fs) -> Set.map ((+) (s+"\\")) (longNamesFileSys fs)
 
 longNamesElement d1
+
+// 6.2
+type Fexpr = | Const of float
+             | X
+             | Add of Fexpr * Fexpr
+             | Sub of Fexpr * Fexpr
+             | Mul of Fexpr * Fexpr
+             | Div of Fexpr * Fexpr
+             | Sin of Fexpr
+             | Cos of Fexpr
+             | Log of Fexpr
+             | Exp of Fexpr;;
+
+let rec toString = function
+    | Const f       -> string f
+    | X             -> "x"
+    | Add (f1,f2)   -> "(" + toString f1 + "+" + toString f2 + ")"
+    | Sub (f1,f2)   -> "(" + toString f1 + "-" +  toString f2 + ")"
+    | Mul (f1,f2)   -> "(" + toString f1 + "*" + toString f2 + ")"
+    | Div (f1,f2)   -> "(" + toString f1 + "/" + toString f2 + ")"
+    | Sin f         -> "sin(" + toString f +  ")"
+    | Cos f         -> "cos(" + toString f + ")"
+    | Log f         -> "log(" + toString f +  ")"
+    | Exp f         -> "exp(" + toString f +  ")"
+
+toString (Sin (Mul(X, X)))
+
+// 6.8
+type Instruction = | ADD |  SUB | MULT | DIV | SIN 
+                   | COS | LOG | EXP | PUSH of float
+               
+type Stack = float list
+
+let rec intpInstr = function
+    | (_,[])                -> []
+    | (ADD,Stack x::xs::rst)      -> x+xs::rst
+    | (SUB,x::xs::rst)      -> x-xs::rst
+    | (MULT,x::xs::rst)     -> x*xs::rst
+    | (DIV,x::xs::rst)      -> x/xs::rst
+    | (SIN,x::xs)           -> sin(x)::xs
+    | (COS,x::xs)           -> cos(x)::xs
+    | (LOG,x::xs)           -> log(x)::xs
+    | (EXP,x::xs)           -> exp(x)::xs
+    | (PUSH a,x)            -> a::x

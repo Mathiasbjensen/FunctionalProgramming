@@ -42,7 +42,8 @@ let rec mainSourceAux = function
     | [] -> [("",0)]
     | t::tail -> (mainSource t) :: (mainSourceAux tail)
 and mainSource = function
-    | R (n1,f,t) -> helpMainSource((n1,f) :: (mainSourceAux t))
+    | R (n1,f,t) -> helpMainSource((n1,f) :: (mainSourceAux t));;
+mainSource riv
  
  // 6
 let rec tryInsertAux = function
