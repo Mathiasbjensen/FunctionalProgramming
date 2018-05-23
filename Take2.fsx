@@ -356,10 +356,10 @@ inv (Map.ofList [("b",3); ("a",5); ("d",1)])
 
 // ***** WEEK 8 *****
 
-type FileSys = Element list 
-    and Element =
-    | File of string * string
-    | Dir of string * FileSys
+//type FileSys = Element list 
+//    and Element =
+//    | File of string * string
+//    | Dir of string * FileSys
 
 let d1 = Dir("d1",[File("a1","java");
                     Dir("d2", [File("a2","fsx");
@@ -701,7 +701,7 @@ and insertChildOf n c f =
     | true  -> Some(t)
     | false -> None
 
-insertChildOf "Bob" (P ("skod",M,1800,[])) ft
+insertChildOf "Bob" (P ("skod",M,2010,[])) ft
 
 
 // 3.4
@@ -719,16 +719,9 @@ and find n a = function
 
 find "Mary" 0 ft
 
-// 3.5 IKKE FÆRDIG
+// 3.5
 
-let rec depthAux = function
-    | []            -> 0
-    | x::xs         -> depth x + depthAux xs
-and depth = function
-    | P (n,s,y,c) when c <> []  -> 1 + depthAux c
-    | P (n,s,y,c)               -> depthAux c
 
-depth ft
 
 let rec indent = function
     | 0 -> ""
@@ -739,8 +732,8 @@ let rec toStringAux n a = function
     | []                -> ""
     | x::xs             -> toStringHelp n a x + toStringAux n a xs
 and toStringHelp n a = function
-        | P (name,s,y,c) -> string(name) + " " + sexToString s + " " + string(y) +  "\n" + indent n + toStringAux (n*a) (a+1) c
-and toString n f = toStringHelp n 1 f
+        | P (name,s,y,c) -> indent (n*a) + string(name) + " " + sexToString s + " " + string(y) + "\n"  + toStringAux n (a+1) c
+and toString n f = toStringHelp n 0 f
 
 
 toString 6 ft
@@ -749,26 +742,32 @@ let ft = P ("Larry", M, 1920, [P ("May", F, 1945,[P("Fred", M, 1970,[]);P ("Joan
                                 P("Joe", M, 1950,[P("Stanley", M, 1975,[]);P("Mary", F, 1980,[P("Peter", M,2005,[]);P("Bob", M, 2008,[]);P("Eve",F,2010,[])]);P("Jane",F,1985,[])]); 
                                 P ("Paul", M, 1955,[])])
 
-let ft2 = P ("Søren", M,  1966, [P ("Mathias", M, 1994, [P ("skodsvans", M, 2020,[])]); P ("Simone", F, 1996, [])])
-(* 
-let rec toStringAux n a = function
-    | []                -> ""
-    | x::xs             -> toStringHelp n a x + toStringAux n a xs
-and toStringHelp n a = function
-        | P (name,s,y,c) when c <> [] -> string(name) + " " + sexToString s + " " + string(y) +  "\n" + indent n + toStringAux (n*a) a c
-        | P (name,s,y,c)  -> string(name) + " " + sexToString s + " " + string(y) +  "\n" + toStringAux n (a+1) c 
-and toString n x = toStringHelp n 0 x
+
+// Extra shit
+//  count how many of a sex there are in the family tree:
+
+let rec noOfSexAux s = function
+    | []            -> 0
+    | x::xs         -> noOfSex s x + noOfSexAux s xs
+and noOfSex s = function
+    | P (_,s1,_,c)   -> if s1 = s then 1 + noOfSexAux s c else noOfSexAux s c
+
+noOfSex M ft
 
 
-toString 6 ft
-*)
+(*let rec depthAux = function
+    | []            -> 0
+    | x::xs         -> depth x + depthAux xs
+and depth = function
+    | P (n,s,y,c) when c <> []  -> 1 + depthAux c
+    | P (n,s,y,c)               -> depthAux c
 
-
+depth ft
 
 let rec depthTestAux = function
     | []        -> ""
     | x::xs 
-
+*)
 
 
 
@@ -894,4 +893,323 @@ let rec top n = function
                                 | None -> None
                                 | Some res -> Some(s::res)  
 top 2 sb
+
+// 2.1
+let rec replace a b = function
+    | []    -> []
+    | x::xs when x=a    -> b::(replace a b xs) (* 1 *)
+    | x::xs             -> x::(replace a b xs) (* 2 *)
+
+replace 2 7 [1; 2; 3; 2; 4]
+
+// 2.2
+
+// The most general type ust have the form: t1 -> t2 -> t3 -> t4, for some types t1, t2, t3, t4, due to the form of the declaration, 
+// where a:t1, b:t2, t3 = t1 list due to x=a in (* 1 *)
+// Furthermore, t2 = t1 and t4 = t1 list due to b::... in (* 1 *) and x::... in (* 2 *)  
+// The only constraint on t1 is that it must support equality. 
+// Hence, most general type is: 'a -> 'a -> 'a list -> 'a list when 'a: equality
+
+// Replace is not tail-recursive, because when the recursive call in (* 1 *) terminates, then the cons operation b:: ... remains to be executed, 
+// that is, this recursive call is not a tail call. Similarly for (* 2 *)
+
+//2.3 tail-recursive liste
+let rec replace a b res = function
+    | []    -> List.rev res
+    | x::xs when a = x  -> replace a b (b::res) xs
+    | x::xs             -> replace a b (x::res) xs
+
+replace 2 7 [] [1; 2; 3; 2; 4]
+
+//3.1
+let pos = Seq.initInfinite (fun i -> i+1) ;;
+
+let seq1 = seq {yield (0,0) 
+                for i in pos do
+                    yield (i,i)
+                    yield (-i,-i)}
+
+let val1 = Seq.take 5 seq1;;
+val1
+
+
+
+
+// Exam May 2017
+
+//Problem 1
+
+// 1
+let rec repeatList xs = function
+    | 0     -> []
+    | n     -> xs@repeatList xs (n-1)
+
+repeatList [1;2] 3
+// val it : int list = [1; 2; 1; 2; 1; 2]
+// Hvis man brugte cons :: giver det [[1;2];[1;2];[1;2]]
+
+// 2
+let rec merge = function
+    |(x::xs,y::ys)  -> x::y::merge(xs,ys)
+    |([],y)     -> y
+    |(x,[])     -> x
+
+merge([1; 2; 3; 4], [5; 6])
+
+// Problem 2
+
+//1 
+let rec f = function
+| 0 -> [0]
+| i when i>0 -> i::g(i-1)
+| _ -> failwith "Negative argument"
+and g = function
+| 0 -> []
+| n -> f(n-1)
+
+f 5
+// val it : int list = [5; 3; 1]
+// int -> intlist
+
+let h s k = seq { for a in s do
+                     yield k a }
+
+h (seq [1;2;3;4]) (fun i -> i+10)
+
+// val it : seq<int> = seq [11; 12; 13; 14]
+// val h : s:seq<'a> -> k:('a -> 'b) -> seq<'b>
+
+// 2.2
+// tail recursve - accumulating parameter
+let rec sumA a = function
+    | []    -> a
+    | x::rest   -> sumA(a+x) rest
+
+sumA 0 [1;3;5]
+
+// tail recursive - continuation based
+let rec sumC c = function
+    | []    -> c 0
+    | x::rest   -> sumC (fun res -> c(res+x)) rest
+
+sumC id [1;3;5]
+
+// Problem 3
+type Article = string
+type Amount = int
+type Price = int
+type Desc = Amount*Price
+type Stock = (Article*Desc) list
+let st = [("a1",(100,10)); ("a2",(50,20)); ("a3",(25,40))]
+
+// 3.1
+let rec stockVal = function
+    | []                -> 0
+    | (a,(n,p))::tail   -> (n*p)+stockVal tail
+
+stockVal st
+
+// 3.2
+let rec inv = function
+    | []                -> true
+    | (a,(n,p))::tail   -> if n>0 && p>0 && not (List.exists (fun (a1,(n1,p1)) -> a1=a) tail) then inv tail else false
+inv st
+
+
+// 3.3
+type Order = Article*Amount
+type Status<'a> = Result of 'a | Error of string
+
+let rec getHelp (a,k) = function
+    | (a1,(n,p))::res     -> if a=a1 then (a1,(n-k,p))::res else (a1,(n,p))::(getHelp(a,k) res)
+    | []                 -> []
+
+let rec get (a,k) st = 
+    match List.filter (fun (a1,(n,p)) -> a=a1 && k<=n) st with
+    | [(a1,(n,p))] -> Result(k*p,getHelp(a,k) st)
+    | [] -> failwithf "insufficient supply for %s" a
+
+get ("a2",100) st
+// val it : Status<int * (string * (int * int)) list> =
+  Result (200, [("a1", (100, 10)); ("a2", (40, 20)); ("a3", (25, 40))])
+
+// 3.4
+let rec getAllAux (a,k) = function
+    | (a1,(n1,p1))::tail        -> if a=a1 && k<=n1 then (a1,(n1-k,p1))::tail else (a1,(n1,p1))::getAllAux (a,k) tail
+    | []                        -> []
+
+let rec getAllHelp st = function
+    | (a,k)::tail   -> getAllHelp  (getAllAux (a,k) st) tail
+    | []            -> st
+
+let rec getAllPrices st = function
+    | (a,k)::tail    -> match List.tryFind (fun (a1,(n,p)) -> a1 = a && k<=n) st with
+                            | Some (a1,(n,p))   -> k*p + getAllPrices st tail
+                            | None              -> failwith "that order could not be handled"
+    | []             -> 0
+
+let os = [("a1", 30); ("a2", 40); ("a3", 3)]
+
+let getAll os st = Result(getAllPrices st os, getAllHelp st os)
+
+getAll os st
+// Result (1220, [("a1", (70, 10)); ("a2", (10, 20)); ("a3", (22, 40))])
+
+// Problem 4
+
+//4.1
+type T<'a> = 
+    | L
+    | A of 'a * T<'a>
+    | B of 'a * T<'a> * T<'a>
+    | C of 'a * T<'a> * T<'a> * T<'a>
+
+C (3,B (2,L,L),A (2,A(0,L)), L)
+
+// T is a sort of tree. 
+// C is a node with a value 'a and 3 edges, B is a node with a value 'a and 2 edges and A is a  node with a value 'a and 1 edge.
+// L is a leaf, sort of a way to stop the tree from "growing".
+// Given the example above the type 'a is int.
+
+// 4.2
+let rec f1 t = 
+    match t with
+    | B(_, t1,t2) -> f1 t1 && f1 t2
+    | L -> true
+    | _ -> false
+// val f1 : t:T<'a> -> bool
+// checks if binary tree/only B and L is within t
+
+let rec f2 t = 
+    match t with
+    | L -> L
+    | A(i,t) -> A(i, f2 t)
+    | B(i,t1,t2) -> B(i, f2 t2, f2 t1)
+    | C(i,t1,t2,t3) -> C(i, f2 t3, f2 t2, f2 t1)
+// val f2 : t:T<'a> -> T<'a>
+// traverses the a given tree t
+
+let rec f3 h = function
+    | L -> L
+    | A(i,t) -> A(h i, f3 h t)
+    | B(i,t1,t2) -> B(h i, f3 h t1, f3 h t2)
+    | C(i,t1,t2,t3) -> C(h i, f3 h t1, f3 h t2, f3 h t3)
+// ('a -> 'b) -> T<'a> -> T<'b>
+// Applies a function to every node's value in the tree
+
+// Problem 5
+type Title = string
+type Document = Title * Element list
+and Element =   Par of string 
+              | Sec of Document
+
+let s1 = ("Background", [Par "Bla"])
+let s21 = ("Expressions", [Sec("Arithmetical Expressions", [Par "Bla"]); Sec("Boolean Expressions", [Par "Bla"])])
+let s222 = ("Switch statements", [Par "Bla"])
+let s223 = ("Repeat statements", [Par "Bla"])
+let s22 = ("Statements",[Sec("Basics", [Par "Bla"]) ; Sec s222; Sec s223])
+let s23 = ("Programs", [Par "Bla"])
+let s2 = ("The Programming Language", [Sec s21; Sec s22; Sec s23])
+let s3 = ("Tasks", [Sec("Frontend", [Par "Bla"]);Sec("Backend", [Par "Bla"])])
+
+let doc = ("Compiler project", [Par "Bla"; Sec s1; Sec s2; Sec s3]);;
+
+// 5.1
+
+let rec noOfSecs = function
+    | (x, Par (_)::es )    -> 0 + noOfSecs (x,es)
+    | (x, (Sec es1)::es2)   -> 1 + noOfSecs es1 + noOfSecs (x,es2)
+    | (_,[])                    -> 0
+
+noOfSecs doc
+
+// 5.2
+// String.length("abc") = 3
+
+let rec sizeOfDoc = function
+    | (x, Par (y)::es)      -> String.length(y) + sizeOfDoc (x,es)
+    | (x, (Sec (y,e))::es)   -> String.length(y) + sizeOfDoc (x,e) + sizeOfDoc (x,es)
+    | (x,[])                -> 0 //String.length(x)
+
+sizeOfDoc s21
+
+// 5.3
+
+let rec titlesInDoc = function
+    | (x, Par _::es)      -> titlesInDoc (x,es)
+    | (x, (Sec (y,e))::es)   -> y::titlesInDoc (x,e)@titlesInDoc (x,es)
+    | (x,[])                -> []
+
+titlesInDoc doc
+
+// 5.4
+type Prefix = int list;;
+type ToC = (Prefix * Title) list
+
+
+//let rec tocAux n = function
+//    | []    -> []
+//    | e::es -> tocHelp n e @ tocAux (n+1) es
+//and tocHelp n = function
+//    | (x, Par _::es)        -> (x,
+
+
+// *** DECEMBER 17 ***
+
+
+// Problem 4
+type K<'a> = L | M of K<'a> * 'a * K<'a>
+
+let v1 = L
+let v2 = M (L,("a",[1;2]),L)
+let v3 = M (v2,("b",[9;10]),M(L,("s",[5]),L))
+let v4 = M (v2,("hej",[1;2;3]),v3) 
+
+// Problem 5
+type Term = | V of string
+            | C of int 
+            | F of string * Term list
+;;
+let ng1 = V "x"
+let g1 = C 3
+let g2 = F ("f0",[]) 
+let g3 = F ("f1",[C 3;F("f0",[])]) 
+let ng2 = F ("max",[V "x";C 3])
+
+let rec isGroundAux = function
+    | []        -> true
+    | t::ts     -> isGround t && isGroundAux ts 
+and isGround = function
+    | V _           -> false
+    | C _           -> true
+    | F (_,t::ts)   -> isGround t && isGroundAux ts
+    | F (_,[])      -> true
+
+
+
+// 5.2
+let rec toStringAux = function
+    | []    -> ""
+    | t::ts     -> "," + toString t  + toStringAux ts
+and toString = function
+    | V x           -> x
+    | C n           -> string(n)
+    | F (s,t::ts)   -> s + "(" + toString t + toStringAux ts + ")"
+    | F (s, [])     -> s+"()"
+
+let t6 = F("f3",[F("f2",[C 1; C 2]); F("f1",[V "x"]); F("f0",[])])
+
+toString t6
+
+// 5.3
+let rec substAux x t = function
+    | []            -> []
+    | t1::ts         -> (subst x t t1)::(substAux x t ts)
+and subst x t = function
+    | V a           -> if x = V a then t else V a
+    | C n           -> C n
+    | F(s,t1::ts)   -> F(s,(subst x t t1)::(substAux x t ts))
+    | F(s,[])       -> F (s,[])
+
+subst (V "x") (C 117) t6
 
