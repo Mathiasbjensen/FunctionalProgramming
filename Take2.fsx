@@ -480,6 +480,91 @@ let rec extractInterested p = function
 extractInterested p1 reg
 
 
+// --- ASSIGNMENT 2 ---
+type CourseNo   = int
+type Title      = string
+type ECTS       = int
+type CourseDesc = Title * ECTS 
+
+type CourseBase = Map<CourseNo, CourseDesc>
+
+type Mandatory   = Set<CourseNo>
+type Optional    = Set<CourseNo> 
+type CourseGroup = Mandatory * Optional
+
+type BasicNaturalScience      = CourseGroup
+type TechnologicalCore        = CourseGroup
+type ProjectProfessionalSkill = CourseGroup
+type Elective                 = CourseNo -> bool
+
+type FlagModel  = BasicNaturalScience * TechnologicalCore 
+                   * ProjectProfessionalSkill * Elective                 
+type CoursePlan = Set<CourseNo>   
+
+// 1
+// Feedback: Match clause is overkill. Use  a let declaration to decompose the description...
+let isValidCourseDesc desc =
+    match desc with
+    | (_,E) -> if E % 5 = 0 && E > 0 then true else false
+
+let isValidCourseDesc desc = let (_,E) = E % 5 = 0 && E > 0
+
+// 2
+// Feed back: True not needed
+let isValidCourseBase (cb:CourseBase) = Map.forall (fun _ (desc:CourseDesc) -> isValidCourseDesc desc = true) cb
+
+// 3
+
+let disjoint = function
+    | (rs, ys) -> if Set.intersect rs ys = set [] then true else false
+
+// 4
+let rec sumECTS = function
+    | (cs,_) when Set.count (cs) = 0 -> 0
+    | (cs,cb) -> 
+        let elem = (Set.maxElement(cs))
+        match Map.tryFind elem cb with
+        | Some(cs2,E) -> E+sumECTS(Set.remove elem cs,cb)
+        | None -> sumECTS(Set.remove elem cs,cb)
+
+
+// 5
+let isValidCourseGroup cg cb =
+    match cg with
+    |(man,opt) -> 
+        let sumMan = sumECTS(man,cb)
+        let sumOpt = sumECTS(opt,cb)
+        (sumMan <= 45) && disjoint(man,opt) && (sumMan+sumOpt) >= 45 && not ((sumMan = 45) && (opt <> Set.empty))
+
+
+// 6
+// Takes 2 sets and unifies them to 1 set.
+let unionSets = fun (rs,ys) -> Set.union rs ys
+// Testing if all 3 CourseGroups are valid.
+let threeCourseValid = fun bns tc pps cb -> (isValidCourseGroup bns cb && isValidCourseGroup tc cb && isValidCourseGroup pps cb)
+
+let isValid = fun ((bns,tc,pps,ep):FlagModel,cb:CourseBase) -> 
+    let bnsUnion = unionSets bns
+    let tcUnion = unionSets tc
+    let ppsUnion = unionSets pps
+    (disjoint(bnsUnion,tcUnion) && disjoint(bnsUnion,ppsUnion) && disjoint(tcUnion,ppsUnion) && 
+        threeCourseValid bns tc pps cb && Set.forall ep (unionSets (unionSets (bnsUnion,tcUnion),ppsUnion)))
+
+
+// 7
+let checkPlan cp fm cb =
+    match fm with
+    |(bns,tc,pps,ep) ->
+    let bnsInCp = Set.intersect (unionSets bns) cp
+    let tcInCp = Set.intersect (unionSets tc) cp
+    let ppsInCp = Set.intersect (unionSets pps) cp
+    ((sumECTS(cp,cb) = 180) && (sumECTS(bnsInCp,cb) >= 45) && (sumECTS(tcInCp,cb) >= 45) && (sumECTS(ppsInCp,cb) >= 45) && 
+        (isValid((bns,tc,pps,ep),cb) && (Set.forall ep cp)))
+
+
+// Test declarations
+let test = [(100,("test",30)); (101,("test2",30)); (102,("CsTest1",15)); (200,("test3", 30));(201,("test4", 30)); (202,("CsTest2",15)); (300,("test5", 30));(301,("test6",30)) ; (302,("CsTest3",15)); (400,("test7",15)) ; (401,("test8",15)) ; (402,("test9",15))]
+let test2 = Map.ofList test
 
 
 // --- ASSIGNMENT 3 ---
@@ -556,8 +641,71 @@ and nameElement = function
     | File (s,ext)      -> [string s + "." + string ext]
     | Dir(s,fs)         -> s::(nameFileSys fs)
 
+// -- ASSIGNMENT 4 --
+// ******************
+type Outcome    = | S | F // S: for success and F: for failure
+type Sample     = Outcome list
+type ProbTree   = | Branch of string * float * ProbTree * ProbTree
+                  | Leaf of string;;
 
 
+// right tree of fig 1. (2/3)
+let exp = Branch(">2",0.67, Branch(">3",0.5, Leaf "A", Leaf "B"), Branch(">3",0.5, Leaf "C", Leaf "D"));;
+
+// 1
+// Frederik du skal nok lige tjekke den her, er lidt usikker på Leaf tilfældet.
+
+let rec probOk t = 
+    match t with
+    | Branch(_,p,tl,tr) -> (0.0 < p) && (p <= 1.0) && probOk tl && probOk tr
+    | Leaf s -> true;;
+
+probOk exp
+
+// 2
+
+let rec isSample = function
+    | ([], Leaf s) -> true
+    | (_, Leaf s) -> false
+    | ([], _) -> false
+    | (x::xs,Branch(_,_,tl,tr)) -> if x = S then isSample(xs,tl) else isSample(xs,tr);;
+   
+isSample ([F;S],exp)
+
+// 3
+x::yield::tail  x>value>yield
+x::tail
+
+type Description =  ((Outcome * string) list) * float * string
+
+
+let rec descriptionOfAux = function
+    | (_,Leaf s1, (ys,p2,s2)) -> ((List.rev ys),p2,s1) 
+    | (x::xs,Branch(ds,p1,tl,tr),(ys,p2,s)) when x = F -> descriptionOfAux(xs,tr,((x,ds)::ys,(1.0-p1)*p2,s))  
+    | (x::xs,Branch(ds,p1,tl,tr),(ys,p2,s)) -> descriptionOfAux(xs,tl,((x,ds)::ys,(p1)*p2,s))
+
+let descriptionOf os t = if isSample(os,t) then descriptionOfAux(os,t,([], 1.0, "")) else failwith "Sample not correct"
+
+descriptionOf [S;F] exp
+
+// 4
+
+let rec allDescriptionsAux = function
+    | (Leaf s1,(ys,p,s2)) -> set [(List.rev ys,p,s1)]
+    | (Branch(ds,p1,tl,tr), (ys,p2,s)) -> Set.union (allDescriptionsAux(tl,((S,ds)::ys,p1*p2,s))) (allDescriptionsAux(tr,((F,ds)::ys,(1.0-p1)*p2,s)));;
+
+let allDescriptions t = allDescriptionsAux (t,([],1.0,""))
+
+allDescriptions exp
+
+// 5
+let rec probabilityOfAux = function
+    | (Leaf s1,(ys,p,s2),pred) -> if pred s1 then p else 0.0
+    | (Branch(ds,p1,tl,tr), (ys,p2,s), pred) -> probabilityOfAux(tl,((S,ds)::ys,p1*p2,s),pred) + probabilityOfAux(tr,((F,ds)::ys,(1.0-p1)*p2,s),pred);;
+
+let probabilityOf t pred = probabilityOfAux (t,([],1.0,""),pred)
+// 6
+probabilityOf (exp) (fun s -> s = "C" || s = "B")
 
 
 
@@ -565,6 +713,7 @@ and nameElement = function
 
 
 // *** EXAMS ***
+// *************
 
 // --- Summer-2014 ---
 
@@ -755,20 +904,6 @@ and noOfSex s = function
 noOfSex M ft
 
 
-(*let rec depthAux = function
-    | []            -> 0
-    | x::xs         -> depth x + depthAux xs
-and depth = function
-    | P (n,s,y,c) when c <> []  -> 1 + depthAux c
-    | P (n,s,y,c)               -> depthAux c
-
-depth ft
-
-let rec depthTestAux = function
-    | []        -> ""
-    | x::xs 
-*)
-
 
 
 
@@ -776,6 +911,7 @@ let rec depthTestAux = function
 
 
 // --- Summer-2015 ---
+// *******************
 
 // 1.1
 let rec repeat s = function
@@ -852,8 +988,140 @@ let rec preOrder = function
 preOrder t
 
 
+// -- December 15 --
+// *****************
+
+// Problem 1
+
+type Appliance = string
+type Usage = Appliance * int
+
+let ad1 = ("washing machine", 2)
+let ad2 = ("coffee machine", 1)
+let ad3 = ("dishwasher", 2)
+let ats = [ad1; ad2; ad3; ad1; ad2];;
+
+// 1.1
+let inv ats = List.forall (fun (a,t) -> t>=0) ats
+
+inv ats
+
+// 1.2
+let durationOf a ats = 
+    List.fold (fun acc (a1,t) -> if a1 = a then acc + t else acc) 0 ats
+
+durationOf "coffee machine" ats
+
+// 1.3
+let wf ats = inv ats && List.forall (fun (a,_) -> (durationOf a ats) <=24) ats
+
+wf ats
+
+// 1.4
+let rec delete(a,ats) = 
+    match ats with
+    | [] -> []
+    | (a1,ats1)::tail when a1 = a -> delete(a,tail)
+    | (a1,ats1)::tail -> (a1,ats1)::delete(a,tail)
+
+delete("coffee machine",ats)
+
+// 1.5
+type Price = int
+type Tariff = Map<Appliance, Price>
+
+let trf = Map.ofList [("coffee machine", 100);("dishwasher", 200);("washing machine", 300)]
+
+let isDefined ats trf = List.forall (fun (a,_) -> Map.containsKey a trf) ats
+isDefined ats trf
+
+// 1.6
+
+let rec priceOf ats trf = 
+   match ats with
+   | [] -> 0
+   | (a,t)::tail -> match Map.tryFind a trf with
+                    | Some c -> t*c + priceOf tail trf
+                    | None -> failwith "shit"
+
+priceOf ats trf
+        
+
+
+// Problem 2
+
+let rec g1 p = function
+    | x::xs when p x -> x :: g1 p xs
+    | _ -> [];;
+
+let rec g2 f h n x =
+    match n with
+    | _ when n<0 -> failwith "negative n is not allowed"
+    | 0 -> x
+    | n -> g2 h f (n-1) (f x);;
+
+// 2.1
+
+// 2.2  
+let p1 x = x>1
+let somelist = [1;2;3;4;5]
+// Tail recursive version
+let rec g1A acc p xs = 
+    match xs with
+    | x::xs when p x    -> g1A(x::acc) p xs
+    | x::xs             -> g1A acc p xs
+    | []                -> List.rev acc
+
+g1A [] p1 somelist
+
+//  Continunation-based
+let rec g1C p xs k =
+    match xs with
+    | [] -> k []
+    | x::xs when p x    -> g1C p xs (fun v-> k(x::v))
+    | x::xs             -> g1C p xs k
+
+g1C p1 somelist id
+
+// 2.3
+let f1 m n k = seq { for x in [0..m] do
+                        for y in [0..n] do
+                            if x+y < k then
+                                yield (x,y) };;
+
+
+let f2 f p sq = seq { for x in sq do
+                        if p x then
+                            yield f x };;
+
+let f3 g sq = seq { for s in sq do
+                        yield! g s };;
+
+
+// 2.4
+List.ofSeq (f1 2 2 3) // = [(0, 0); (0, 1); (0, 2); (1, 0); (1, 1); (2, 0)]
+
+// 2.5 
+
+let f2Alt f p sq = 
+    let sift = Seq.filter (fun n -> p n) sq
+    Seq.map (fun s -> f s) sift
+
+// A list and another function to test f2
+let newseq = Seq.init 5 (fun i -> 1+i)
+let ff x = x*2
+
+f2Alt ff p1 newseq
+f2 ff p1 newseq
+
+
+
+
+
+
 
 // EXAM: Fall 2016
+// ***************
 
 type Name = string
 type Event = string
@@ -1156,14 +1424,53 @@ type ToC = (Prefix * Title) list
 
 // *** DECEMBER 17 ***
 
+// Problem 1 
+
+// 1.2
+
+let rec f1 a b = if a > b then f1 (a-b) b else a;;
+// types: val f1 : a:int -> b:int -> int
+
+let rec f2 a b = if a > b then 1 + f2 (a-b) b else 0;;
+// types: val f2 : a:int -> b:int -> int
+
+
+// Problem 3
+
+// 3.1
+let rec f g = function 
+    | (x::xs,y::ys) -> g x y || f g (x::xs,ys) || f g (xs,y::ys) 
+    | _ -> false
+// types: val f : g:('a -> 'b -> bool) -> 'a list * 'b list -> bool
+
+let h z = f (>) z;
+// types: val h : 'a list * 'a list -> bool when 'a : comparison
+
 
 // Problem 4
+
 type K<'a> = L | M of K<'a> * 'a * K<'a>
 
+// 4.1
 let v1 = L
 let v2 = M (L,("a",[1;2]),L)
 let v3 = M (v2,("b",[9;10]),M(L,("s",[5]),L))
 let v4 = M (v2,("hej",[1;2;3]),v3) 
+
+// 4.2
+let rec c x = match x with
+               | L          -> []
+               | M(y,v,w)   -> c y @ [v] @ c w
+// types: val c : x:K<'a> -> 'a list
+
+let rec d i = function 
+    | L -> (L,i) 
+    | M(x,y,z) -> let (x1,j) = d i x 
+                  let (z1,k) = d (j+1) z 
+                  (M(x1,(y,j),z1),k);;
+
+// types: val d : i:int -> _arg1:K<'a> -> K<'a * int> * int       
+
 
 // Problem 5
 type Term = | V of string
